@@ -6,7 +6,7 @@
  * NodeJS version 16.x
  *
  * @category  JavaScript
- * @package   Api GenÃ©rica
+ * @package   Api Divisor de PDF
  * @author    Equipe WebcartÃ³rios <contato@webcartorios.com.br>
  * @copyright 2022 (c) DYNAMIC SYSTEM e Vish! Internet e Sistemas Ltda. - ME
  * @license   https://github.com/dynamic-system-vish/api-generica/licence.txt BSD Licence
@@ -46,7 +46,7 @@ module.exports = class BaixarArquivoRouter {
 
 
              /**
-             * Valida os dados da reuqisição
+             * Valida os dados da reuqisiï¿½ï¿½o
              *
              * @var {mixed} mValida
              */
@@ -57,7 +57,7 @@ module.exports = class BaixarArquivoRouter {
              }
 
             /**
-             * Faz a divisão personalizada do pdf
+             * Faz a divisï¿½o personalizada do pdf
              * @var {object} Resultado
              * @UsaFuncao upload
              */

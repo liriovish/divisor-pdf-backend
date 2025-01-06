@@ -1,7 +1,7 @@
 {
-  "name": "api-whatsapp",
+  "name": "api-divisor-pdf",
   "version": "1.0.0",
-  "description": "API REST - WhatsApp",
+  "description": "API - Divisor de PDF",
   "main": "index.js",
   "scripts": {
     "start": "node index.js",

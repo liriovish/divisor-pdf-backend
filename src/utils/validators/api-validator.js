@@ -51,10 +51,22 @@ module.exports = class ApiValidator {
         /**
          * Valida se existe o numero do destinatario
          */
-        if (!oDados.originalname || !oDados.paginaInicial || !oDados.paginaFinal) 
+        if (!oDados.originalname) 
         {
             return HttpResponse.badRequest(
-                new CustomError('originalname, paginaInicial e paginaFinal sÃ£o obrigatÃ³rios', 4)
+                new CustomError('originalname é obrigatório', 4)
+            )
+        }
+        if (!oDados.paginaInicial) 
+        {
+            return HttpResponse.badRequest(
+                new CustomError('paginaInicial é obrigatório', 4)
+            )
+        }
+        if (!oDados.paginaFinal) 
+        {
+            return HttpResponse.badRequest(
+                new CustomError('paginaFinal é obrigatório', 4)
             )
         }
 

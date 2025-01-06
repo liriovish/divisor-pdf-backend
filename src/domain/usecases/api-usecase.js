@@ -1,12 +1,12 @@
 /**
- * Esse arquivo � respons�vel pelas valida��es e tratamentos antes de enviar
+ * Esse arquivo é responsável pelas validações e tratamentos antes de enviar
  * a consulta ou cadastro ao banco de dados
  *
  * NodeJS version 16.x
  *
  * @category  JavaScript
- * @package   Api Gen�rica
- * @author    Equipe Webcart�rios <contato@webcartorios.com.br>
+ * @package   Api Divisor de PDF
+ * @author    Equipe Webcartórios <contato@webcartorios.com.br>
  * @copyright 2022 (c) DYNAMIC SYSTEM e Vish! Internet e Sistemas Ltda. - ME
  * @license   https://github.com/dynamic-system-vish/api-whatsapp/licence.txt BSD Licence
  * @link      https://github.com/dynamic-system-vish/api-whatsapp
@@ -14,7 +14,7 @@
  */
 
 /**
- * Configura��es globais
+ * Configurações globais
  */
 const HttpResponse = require('../../presentation/helpers/http-response')
 const { v4: uuidv4 } = require('uuid')
@@ -42,7 +42,7 @@ module.exports = class ApiUseCase {
             console.log('Arquivo recebido usecase:', oArquivo);
     
             /**
-             * Obtém o buffer e o nome original do arquivo
+             * Obt�m o buffer e o nome original do arquivo
              * @var {Buffer} buffer 
              * @var {string} originalname
              */
@@ -50,22 +50,35 @@ module.exports = class ApiUseCase {
     
             /**
              * Define o caminho de upload
-             * @var {string} uploadPath 
+             * @var {string} sCaminhoUpload 
              */
-            const uploadPath = path.join(__dirname, '../../../uploads', `${originalname}`);
+            const sCaminhoUpload = path.join(__dirname, '../../../uploads', `${originalname}`);
     
             /**
              * Salva o arquivo no sistema de arquivos
              */
-            fs.writeFileSync(uploadPath, buffer);
+            fs.writeFileSync(sCaminhoUpload, buffer);
     
             /**
-             * Carrega o PDF e obtém o número total de páginas
-             * @var {PDFDocument} pdfDoc 
+             * Carrega o PDF e obtem o numero total de paginas
+             * @var {PDFDocument} oDocumento 
              * @var {number} iTotalPages 
              */
-            const pdfDoc = await PDFDocument.load(buffer);
-            const iTotalPages = pdfDoc.getPageCount();
+            const oDocumento = await PDFDocument.load(buffer);
+            const iTotalPages = oDocumento.getPageCount();
+    
+            /**
+             * Faz a exclusao do arquivo apos 5 minutos
+             */
+            setTimeout(() => {
+                fs.unlink(sCaminhoUpload, (err) => {
+                    if (err) {
+                        console.error(`Erro ao remover o arquivo: ${sCaminhoUpload}`, err);
+                    } else {
+                        console.log(`Arquivo removido após 5 minutos: ${sCaminhoUpload}`);
+                    }
+                });
+            }, 5 * 60 * 1000); 
     
             /**
              * Retorna a resposta de sucesso com os detalhes do PDF
@@ -77,11 +90,6 @@ module.exports = class ApiUseCase {
             });
         } catch (error) {
             console.error('Erro ao fazer upload:', error);
-    
-            /**
-             * Retorna uma resposta de erro caso ocorra uma exceção
-             * @var {object} error - Objeto do erro capturado
-             */
             return HttpResponse.badRequest({
                 message: 'Não foi possível fazer upload.',
                 error: error.message
@@ -95,137 +103,104 @@ module.exports = class ApiUseCase {
     async divisaoPersonalizada(oDados) {
         try {
             /**
-             * Desestrutura os dados recebidos e obtém o nome original do arquivo e os parâmetros de página
+             * Desestrutura os dados recebidos e obtém o nome original do arquivo paginaInicial e paginaFinal
              * @var {string} originalname 
              * @var {number} paginaInicial 
              * @var {number} paginaFinal 
              */
             const { originalname, paginaInicial, paginaFinal } = oDados;
-
-            /**
-             * Define o caminho do arquivo original a ser processado
-             * @var {string} uploadPath 
+    
+             /**
+             * Define o caminho de upload
+             * @var {string} sCaminhoUpload 
              */
-            const uploadPath = path.join(__dirname, '../../../uploads', `${originalname}.pdf`);
-
-            /**
-             * Verifica se o arquivo existe no sistema de arquivos
-             */
-            if (!fs.existsSync(uploadPath)) {
+            const sCaminhoUpload = path.join(__dirname, '../../../uploads', `${originalname}.pdf`);
+    
+            
+            if (!fs.existsSync(sCaminhoUpload)) {
                 return HttpResponse.badRequest({ message: 'Arquivo não encontrado.' });
             }
-
+            
             /**
              * Lê o arquivo PDF a partir do sistema de arquivos
-             * @var {Buffer} pdfBytes - Conteúdo binário do arquivo PDF
+             * @var {Buffer} pdfBytes
              */
-            const pdfBytes = fs.readFileSync(uploadPath);
-            
-            /**
-             * Verifica se o conteúdo do arquivo é válido
-             * Se o arquivo estiver vazio ou inválido, retorna erro 400
-             */
-            if (!pdfBytes || pdfBytes.length === 0) {
-                return HttpResponse.badRequest({ message: 'Arquivo PDF inválido ou vazio.' });
-            }
-
+            const pdfBytes = fs.readFileSync(sCaminhoUpload);
+    
             /**
              * Carrega o documento PDF utilizando a biblioteca pdf-lib
-             * @var {PDFDocument} pdfDoc
+             * @var {PDFDocument} oDocumento 
              */
-            const pdfDoc = await PDFDocument.load(pdfBytes);
+            const oDocumento = await PDFDocument.load(pdfBytes);
             
             /**
-             * Obtém o total de páginas no arquivo PDF
-             * @var {number} totalPages
+             *  Obtém o total de páginas no arquivo PDF
+             * @var {number} iTotalPaginas 
              */
-            const totalPages = pdfDoc.getPageCount();
-
-            /**
-             * Verifica se os parâmetros de página são válidos
-             */
+            const iTotalPaginas = oDocumento.getPageCount();
+    
+            // Verifica se os parâmetros de página são válidos
             if (isNaN(paginaInicial) || isNaN(paginaFinal)) {
                 return HttpResponse.badRequest({ message: 'Os valores de página devem ser números válidos.' });
             }
 
-            /**
-             * Verifica se o intervalo de páginas está dentro dos limites do documento
-             */
-            if (paginaInicial < 1 || paginaFinal > totalPages || paginaInicial > paginaFinal) {
-                return HttpResponse.badRequest({ message: 'Intervalo de páginas inválido.' });
-            }
-
-            /**
-             * Gera um array de índices representando as páginas a serem copiadas
-             * @var {Array<number>} indices
-             */
-            const indices = Array.from(
+            // Gera um array de índices representando as páginas a serem copiadas
+            const aIndices = Array.from(
                 { length: paginaFinal - paginaInicial + 1 },
                 (_, i) => (paginaInicial - 1) + i
             );
-
-            /**
-             * Verifica se algum índice está fora do intervalo válido de páginas
-             */
-            if (indices.some(index => index < 0 || index >= totalPages)) {
+    
+            // Verifica se algum índice está fora do intervalo válido de páginas
+            if (aIndices.some(index => index < 0 || index >= iTotalPaginas)) {
+                console.error('Erro: Índices fora do intervalo válido de páginas.');
                 return HttpResponse.badRequest({ message: 'Intervalo de páginas inválido.' });
             }
-
+    
             /**
-             * Cria um novo documento PDF para armazenar as páginas copiadas
-             * @var {PDFDocument} novoPdf 
+             *  Cria um novo documento PDF para armazenar as páginas copiadas
+             * @var {object} oNovoPdf
              */
-            const novoPdf = await PDFDocument.create();
-
+            const oNovoPdf = await PDFDocument.create();
+    
             /**
              * Copia as páginas do documento original para o novo documento
-             * @var {Array<PDFPage>} paginas
+             * @var {array} aPaginas
              */
-            const paginas = await novoPdf.copyPages(pdfDoc, indices);
-
+            const aPaginas = await oNovoPdf.copyPages(oDocumento, aIndices);
+    
+            aPaginas.forEach((pagina) => oNovoPdf.addPage(pagina));
+    
+            // Salva o novo documento PDF em formato binário
+            const novoPdfBytes = await oNovoPdf.save();
+    
+             /**
+             * Copia as páginas do documento original para o novo documento
+             * @var {string} aPaginas
+             */
+            const sNovoArquivoNome = `${originalname}-${paginaInicial}-${paginaFinal}.pdf`;
+    
             /**
-             * Adiciona as páginas copiadas no novo documento PDF
+             *  Define o caminho completo para salvar o novo arquivo PDF dividido
+             * @var {string} sCaminhoNovoPdf
              */
-            paginas.forEach((pagina) => novoPdf.addPage(pagina));
-
-            /**
-             * Salva o novo documento PDF em formato binário
-             * @var {Buffer} novoPdfBytes
-             */
-            const novoPdfBytes = await novoPdf.save();
-
-            /**
-             * Define o caminho completo para salvar o novo arquivo PDF dividido
-             * @var {string} novoPdfPath
-             */
-            const novoPdfPath = path.join(__dirname, '../../../downloads', `${originalname}-${paginaInicial}-${paginaFinal}.pdf`);
-
-            /**
-             * Salva o novo arquivo PDF no sistema de arquivos
-             */
-            fs.writeFileSync(novoPdfPath, novoPdfBytes);
-
-            /**
-             * Retorna uma resposta de sucesso com o caminho de download do novo arquivo PDF
-             */
+            const sCaminhoNovoPdf = path.join(__dirname, '../../../downloads', sNovoArquivoNome);
+    
+            // Salva o novo arquivo PDF no sistema de arquivos
+            fs.writeFileSync(sCaminhoNovoPdf, novoPdfBytes);
+    
+            // Retorna uma resposta de sucesso com o caminho de download do novo arquivo PDF
             return HttpResponse.ok({
                 message: 'PDF dividido com sucesso.',
-                downloadPath: novoPdfPath,
+                arquivo: sNovoArquivoNome
             });
         } catch (error) {
             console.error('Erro ao dividir PDF:', error);
-            
-            /**
-             * Retorna uma resposta de erro caso ocorra uma exceção durante a divisão do PDF
-             * @var {object} error 
-             */
             return HttpResponse.badRequest({
                 message: 'Erro ao dividir o PDF.',
                 error: error.message,
             });
         }
     }
-
         
     /**
      * Função responsável por fazer divisão fixa do PDF em intervalos definidos
@@ -234,148 +209,170 @@ module.exports = class ApiUseCase {
         try {
             /**
              * Desestrutura os dados recebidos e obtém o nome original do arquivo e o intervalo
-             * @var {string} originalname 
-             * @var {number} intervalo 
+             * @var {string} originalname
+             * @var {number} intervalo
              */
             const { originalname, intervalo } = oDados;
-
+    
             /**
              * Define o caminho do arquivo original a ser processado
-             * @var {string} uploadPath 
+             * @var {string} sCaminhoUpload
              */
-            const uploadPath = path.join(__dirname, '../../../uploads', `${originalname}.pdf`);
-
+            const sCaminhoUpload = path.join(__dirname, '../../../uploads', `${originalname}.pdf`);
+    
             /**
              * Verifica se o arquivo existe no sistema de arquivos
              */
-            if (!fs.existsSync(uploadPath)) {
+            if (!fs.existsSync(sCaminhoUpload)) {
                 return HttpResponse.badRequest({ message: 'Arquivo não encontrado.' });
             }
-
+    
             /**
              * Lê o arquivo PDF a partir do sistema de arquivos
-             * @var {Buffer} pdfBytes 
+             * @var {Buffer} pdfBytes
              */
-            const pdfBytes = fs.readFileSync(uploadPath);
-
+            const pdfBytes = fs.readFileSync(sCaminhoUpload);
+    
             /**
              * Verifica se o conteúdo do arquivo é válido
              */
             if (!pdfBytes || pdfBytes.length === 0) {
                 return HttpResponse.badRequest({ message: 'Arquivo PDF inválido ou vazio.' });
             }
-
+    
             /**
              * Carrega o documento PDF utilizando a biblioteca pdf-lib
-             * @var {PDFDocument} pdfDoc 
+             * @var {PDFDocument} oDocumento
              */
-            const pdfDoc = await PDFDocument.load(pdfBytes);
+            const oDocumento = await PDFDocument.load(pdfBytes);
             
             /**
              * Obtém o total de páginas no arquivo PDF
-             * @var {number} totalPages 
+             * @var {number} iTotalPaginas
              */
-            const totalPages = pdfDoc.getPageCount();
-
+            const iTotalPaginas = oDocumento.getPageCount();
+    
             /**
              * Verifica se o intervalo é válido
              * Se o intervalo não for válido, retorna erro 400
              */
-            if (isNaN(intervalo) || intervalo < 1 || intervalo > totalPages) {
+            if (isNaN(intervalo) || intervalo < 1 || intervalo > iTotalPaginas) {
                 return HttpResponse.badRequest({ message: 'Intervalo de páginas inválido.' });
             }
-
+    
             /**
              * Calcula o número de partes que o PDF será dividido
-             * @var {number} numDivisoes 
+             * @var {number} numDivisoes
              */
-            const numDivisoes = Math.ceil(totalPages / intervalo);
+            const numDivisoes = Math.ceil(iTotalPaginas / intervalo);
             
             /**
-             * Cria uma lista de arquivos PDF gerados
-             * @var {Array<Buffer>} arquivosPdf 
+             * Cria uma lista de nomes dos arquivos PDF gerados
+             * @var {Array<string>} aNomesArquivos
              */
-            const arquivosPdf = [];
-
+            const aNomesArquivos = [];
+    
             /**
              * Divide o PDF em partes com o intervalo fixo e cria os arquivos PDF
              */
             for (let i = 0; i < numDivisoes; i++) {
-                const novoPdf = await PDFDocument.create();
+                const oNovoPdf = await PDFDocument.create();
                 const inicio = i * intervalo;
-                const fim = Math.min((i + 1) * intervalo, totalPages);
-
+                const fim = Math.min((i + 1) * intervalo, iTotalPaginas);
+    
                 /**
                  * Cria os índices das páginas que serão copiadas para este novo arquivo
-                 * @var {Array<number>} indices - Índices das páginas a serem copiadas
+                 * @var {Array<number>} aIndices - Índices das páginas a serem copiadas
                  */
-                const indices = Array.from({ length: fim - inicio }, (_, j) => inicio + j);
-
+                const aIndices = Array.from({ length: fim - inicio }, (_, j) => inicio + j);
+    
                 /**
                  * Copia as páginas do documento original para o novo documento
                  */
-                const paginas = await novoPdf.copyPages(pdfDoc, indices);
-                paginas.forEach((pagina) => novoPdf.addPage(pagina));
-
+                const aPaginas = await oNovoPdf.copyPages(oDocumento, aIndices);
+                aPaginas.forEach((pagina) => oNovoPdf.addPage(pagina));
+    
                 /**
                  * Salva o novo arquivo PDF
                  * @var {Buffer} novoPdfBytes - Conteúdo binário do novo PDF
                  */
-                const novoPdfBytes = await novoPdf.save();
-                arquivosPdf.push(novoPdfBytes);
+                const novoPdfBytes = await oNovoPdf.save();
+                const novoPdfNome = `${originalname}-${i + 1}.pdf`;
+                const sCaminhoNovoPdf = path.join(__dirname, '../../../downloads', novoPdfNome);
+    
+                /**
+                 * Salva o novo arquivo no sistema de arquivos
+                 */
+                fs.writeFileSync(sCaminhoNovoPdf, novoPdfBytes);
+    
+                /**
+                 * Adiciona o nome do arquivo gerado à lista
+                 */
+                aNomesArquivos.push(novoPdfNome);
             }
-
+    
             /**
-             * Caso o número de arquivos gerados seja maior que 2, cria um arquivo ZIP
-             */
-            let downloadPath;
-            if (arquivosPdf.length > 2) {
+            * Define o arquivo final
+            * @var {string} sArquivoFinal
+            */
+            let sArquivoFinal;
+           
+            /**
+            * Caso o número de arquivos gerados seja maior que 2, cria um arquivo ZIP
+            */
+            if (aNomesArquivos.length > 2) {
                 /**
                  * Cria um arquivo ZIP contendo todos os PDFs gerados
-                 * @var {string} zipPath - Caminho do arquivo ZIP a ser gerado
+                 * @var {string} sZipNome 
+                 * @var {string} sCaminhoZip 
                  */
-                const zipPath = path.join(__dirname, '../../../downloads', `${originalname}-dividido.zip`);
-
+                const sZipNome = `${originalname}-dividido.zip`;
+                const sCaminhoZip = path.join(__dirname, '../../../downloads', sZipNome);
+    
                 /**
                  * Cria um arquivo temporário para armazenar o ZIP
+                 * @var {object} oZip
                  */
-                const zip = new AdmZip();
-
-                arquivosPdf.forEach((pdfBuffer, index) => {
-                    const pdfName = `${originalname}-${index + 1}.pdf`;
-                    zip.addFile(pdfName, pdfBuffer);
+                const oZip = new AdmZip();
+    
+                aNomesArquivos.forEach((nomeArquivo) => {
+                    const pdfPath = path.join(__dirname, '../../../downloads', nomeArquivo);
+                    oZip.addLocalFile(pdfPath);
                 });
-
+    
                 /**
                  * Salva o arquivo ZIP no sistema de arquivos
                  */
-                zip.writeZip(zipPath);
-                downloadPath = zipPath;
+                oZip.writeZip(sCaminhoZip);
+    
+                /**
+                 * Deleta os PDFs gerados após criar o ZIP
+                 */
+                aNomesArquivos.forEach((nomeArquivo) => {
+                    const pdfPath = path.join(__dirname, '../../../downloads', nomeArquivo);
+                    fs.unlinkSync(pdfPath);  
+                });
+    
+                /**
+                 * Define o nome do arquivo ZIP como resposta final
+                 */
+                sArquivoFinal = sZipNome;
             } else {
                 /**
-                 * Caso haja 2 ou menos arquivos, salva cada arquivo PDF individualmente
+                 * Caso haja 2 ou menos arquivos, retorna os nomes dos arquivos gerados
                  */
-                downloadPath = arquivosPdf.map((pdfBuffer, index) => {
-                    const pdfPath = path.join(__dirname, '../../../downloads', `${originalname}-${index + 1}.pdf`);
-                    fs.writeFileSync(pdfPath, pdfBuffer);
-                    return pdfPath;
-                });
+                sArquivoFinal = aNomesArquivos;
             }
-
+    
             /**
-             * Retorna a resposta de sucesso com o caminho de download do(s) arquivo(s) gerado(s)
+             * Retorna a resposta de sucesso com o nome do arquivo (ou lista de nomes)
              */
             return HttpResponse.ok({
                 message: 'PDF dividido com sucesso.',
-                downloadPath,
+                arquivo: sArquivoFinal,
             });
         } catch (error) {
             console.error('Erro ao dividir PDF:', error);
-
-            /**
-             * Retorna uma resposta de erro caso ocorra uma exceção durante a divisão do PDF
-             * @var {object} error - Objeto do erro capturado
-             */
             return HttpResponse.badRequest({
                 message: 'Erro ao dividir o PDF.',
                 error: error.message,
@@ -383,32 +380,47 @@ module.exports = class ApiUseCase {
         }
     }
 
-
+    /**
+     * Função responsável por baixar o arquivo PDF
+     */
     async baixarArquivo(oDados) {
         try {
             const { originalname } = oDados;
 
             /**
              * Define o caminho completo do arquivo a ser baixado
-             * @var {string} downloadPath
+             * @var {string} sCaminhoDownload
              */
-            const downloadPath = path.join(__dirname, '../../../downloads', originalname);
+            const sCaminhoDownload = path.join(__dirname, '../../../downloads', originalname);
 
             /**
              * Verifica se o arquivo existe no sistema de arquivos
              */
-            if (!fs.existsSync(downloadPath)) {
-                return HttpResponse.badRequest({ message: 'Arquivo não encontrado.' });
+            if (!fs.existsSync(sCaminhoDownload)) {
+                return HttpResponse.badRequest({ message: 'Arquivo n�o encontrado.' });
             }
-    
-            return {download: downloadPath}
-           
-        } catch (error) {
-            console.error('Erro ao buscar arquivo para download:', error);
 
             /**
-             * Retorna um erro genérico caso algum problema ocorra
+             * Retorna o caminho do arquivo para download
+             * @var {object} oResultado
              */
+            const oResultado = { download: sCaminhoDownload };
+
+            // Remove o arquivo da pasta ap�s o download
+            setTimeout(() => {
+                fs.unlink(sCaminhoDownload, (err) => {
+                    if (err) {
+                        console.error(`Erro ao remover o arquivo: ${sCaminhoDownload}`, err);
+                    } else {
+                        console.log(`Arquivo removido: ${sCaminhoDownload}`);
+                    }
+                });
+            }, 5000); 
+
+            return oResultado;
+
+        } catch (error) {
+            console.error('Erro ao buscar arquivo para download:', error);
             return HttpResponse.badRequest({
                 message: 'Erro ao buscar o arquivo.',
                 error: error.message,

@@ -4,7 +4,7 @@
  * NodeJS version 16.x
  *
  * @category  JavaScript
- * @package   Api GenÃ©rica
+ * @package   Api Divisor de PDF
  * @author    Equipe WebcartÃ³rios <contato@webcartorios.com.br>
  * @copyright 2022 (c) DYNAMIC SYSTEM e Vish! Internet e Sistemas Ltda. - ME
  * @license   https://github.com/dynamic-system-vish/api-whatsapp/licence.txt BSD Licence
@@ -23,7 +23,7 @@ const ApiValidator = require('../../utils/validators/api-validator')
  */
 module.exports = class ApiComposer {
     /**
-     * Função responsável por fazer o upload
+     * Funï¿½ï¿½o responsï¿½vel por fazer o upload
      *
      * @returns
      */
@@ -58,7 +58,7 @@ module.exports = class ApiComposer {
         })
     }
     /**
-     * Função responsável por fazer a divisão personalizada
+     * Funï¿½ï¿½o responsï¿½vel por fazer a divisï¿½o personalizada
      *
      * @returns
      */
@@ -95,7 +95,7 @@ module.exports = class ApiComposer {
 
     
     /**
-     * Função responsável por fazer a divisão fixa
+     * Funï¿½ï¿½o responsï¿½vel por fazer a divisï¿½o fixa
      *
      * @returns
      */
@@ -131,7 +131,7 @@ module.exports = class ApiComposer {
     }
     
     /**
-     * Função responsável por fazer a divisão fixa
+     * Funï¿½ï¿½o responsï¿½vel por fazer a divisï¿½o fixa
      *
      * @returns
      */

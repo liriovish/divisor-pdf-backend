@@ -4,7 +4,7 @@
  * NodeJS version 16.x
  *
  * @category  JavaScript
- * @package   Api GenÈrica
+ * @package   Api Divisor de PDF
  * @author    Equipe Webcart√≥rios <contato@webcartorios.com.br>
  * @copyright 2022 (c) DYNAMIC SYSTEM e Vish! Internet e Sistemas Ltda. - ME
  * @license   https://github.com/dynamic-system-vish/api-whatsapp/licence.txt BSD Licence
@@ -20,7 +20,7 @@ const ApiRouteComposer = require('../composers/api-composer')
 const multer = require('multer');
 
 /**
- *  ConfiguraÁ„o do multer com armazenamento na memÛria
+ *  Configura√á√Éo do multer com armazenamento na mem√ìria
  *  
  */
 const storage = multer.memoryStorage();
@@ -42,7 +42,7 @@ module.exports = router => {
 
 
     /**
-     * Rota POST para divis„o personalizada do pdf
+     * Rota POST para divis√£o personalizada do pdf
      * @UsaFuncao adapt
      * @UsaFuncao ApiRouteComposer.divisaoPersonalizada
      * @return {object}
@@ -51,7 +51,7 @@ module.exports = router => {
     
     
     /**
-     * Rota POST para divis„o fixa do pdf
+     * Rota POST para divis√£o fixa do pdf
      * @UsaFuncao adapt
      * @UsaFuncao ApiRouteComposer.divisaoPersonalizada
      * @return {object}
