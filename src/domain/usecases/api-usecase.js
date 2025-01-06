@@ -397,7 +397,7 @@ module.exports = class ApiUseCase {
              * Verifica se o arquivo existe no sistema de arquivos
              */
             if (!fs.existsSync(sCaminhoDownload)) {
-                return HttpResponse.badRequest({ message: 'Arquivo n�o encontrado.' });
+                return HttpResponse.badRequest({ message: 'Arquivo não encontrado.' });
             }
 
             /**
