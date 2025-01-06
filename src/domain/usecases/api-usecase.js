@@ -17,7 +17,6 @@
  * Configurações globais
  */
 const HttpResponse = require('../../presentation/helpers/http-response')
-const { v4: uuidv4 } = require('uuid')
 const fs = require('fs')
 const path = require('path');
 const { PDFDocument } = require('pdf-lib');
@@ -38,8 +37,6 @@ module.exports = class ApiUseCase {
              * @var {object} oArquivo
              */
             const { oArquivo } = oDados;
-    
-            console.log('Arquivo recebido usecase:', oArquivo);
     
             /**
              * Obt�m o buffer e o nome original do arquivo
@@ -75,7 +72,7 @@ module.exports = class ApiUseCase {
                     if (err) {
                         console.error(`Erro ao remover o arquivo: ${sCaminhoUpload}`, err);
                     } else {
-                        console.log(`Arquivo removido após 5 minutos: ${sCaminhoUpload}`);
+                        console.log(`Arquivo removido de uploads: ${sCaminhoUpload}`);
                     }
                 });
             }, 5 * 60 * 1000); 
@@ -406,13 +403,13 @@ module.exports = class ApiUseCase {
              */
             const oResultado = { download: sCaminhoDownload };
 
-            // Remove o arquivo da pasta ap�s o download
+            // Remove o arquivo da pasta após o download
             setTimeout(() => {
                 fs.unlink(sCaminhoDownload, (err) => {
                     if (err) {
                         console.error(`Erro ao remover o arquivo: ${sCaminhoDownload}`, err);
                     } else {
-                        console.log(`Arquivo removido: ${sCaminhoDownload}`);
+                        console.log(`Arquivo removido de downloads: ${sCaminhoDownload}`);
                     }
                 });
             }, 5000); 
