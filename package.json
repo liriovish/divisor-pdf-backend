@@ -40,11 +40,11 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dynamic-system-vish/api-whatsapp.git"
+    "url": ""
   },
   "bugs": {
-    "url": "https://github.com/dynamic-system-vish/api-whatsapp/issues"
+    "url": ""
   },
-  "homepage": "https://github.com/dynamic-system-vish/api-whatsapp#readme",
+  "homepage": "",
   "keywords": []
 }
